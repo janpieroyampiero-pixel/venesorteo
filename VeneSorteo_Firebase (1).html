@@ -1,0 +1,520 @@
+      <div class="adm-alert">✅ Panel conectado a Firebase en tiempo real. Los datos se actualizan automáticamente.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="adm-card">
+          <div class="adm-form-title">⚡ Acciones rápidas</div>
+          <button class="adm-btn success" onclick="showAdmSec('adm-pagos',document.querySelectorAll('.adm-nav-btn')[4]);loadAdminData()">💰 Ver pagos pendientes</button>
+          <button class="adm-btn warning" onclick="showAdmSec('adm-apuestas',document.querySelectorAll('.adm-nav-btn')[3]);loadAdminData()">🎫 Ver apuestas</button>
+          <button class="adm-btn" onclick="loadAdminData()">🔄 Actualizar todo</button>
+        </div>
+        <div class="adm-card">
+          <div class="adm-form-title">📋 Sistema</div>
+          <p style="font-size:13px;color:#666;line-height:1.7">• Base de datos: <strong>Firebase Firestore</strong><br>• Proyecto: <strong>venesorteo</strong><br>• Plan: <strong>Spark (Gratuito)</strong><br>• Premio: <strong>1.5% ganancias/día</strong><br>• Sorteo especial: <strong>Domingos 8 PM</strong></p>
+        </div>
+      </div>
+    </div>
+    <div class="adm-section" id="adm-usuarios">
+      <div class="adm-title">👥 Gestión de Usuarios</div>
+      <div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Saldo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="adm-users-tbody"><tr><td colspan="6" style="text-align:center;padding:28px;color:#999">Cargando...</td></tr></tbody></table></div>
+    </div>
+    <div class="adm-section" id="adm-apuestas">
+      <div class="adm-title">🎫 Gestión de Apuestas</div>
+      <div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>ID</th><th>Jugador</th><th>Lotería</th><th>Animal</th><th>Horario</th><th>Fecha</th><th>Estado</th><th>Monto</th><th>Acciones</th></tr></thead><tbody id="adm-apuestas-tbody"><tr><td colspan="9" style="text-align:center;padding:28px;color:#999">Cargando...</td></tr></tbody></table></div>
+    </div>
+    <div class="adm-section" id="adm-pagos">
+      <div class="adm-title">💰 Pagos Reportados</div>
+      <div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>Jugador</th><th>Banco</th><th>Origen</th><th>Fecha</th><th>Monto</th><th>Referencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="adm-pagos-tbody"><tr><td colspan="8" style="text-align:center;padding:28px;color:#999">Cargando...</td></tr></tbody></table></div>
+    </div>
+    <div class="adm-section" id="adm-resultados">
+      <div class="adm-title">🏆 Ingresar Resultados</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="adm-card">
+          <div class="adm-form-title">Nuevo resultado de sorteo</div>
+          <label style="font-size:11px;color:#666;font-weight:600;display:block;margin-bottom:5px">LOTERÍA</label>
+          <select class="adm-select" id="res-loteria"><option value="">Selecciona lotería</option><option>Lotto Activo</option><option>Lotto Internacional</option><option>Mega Animal 40</option><option>Monje Millonario</option><option>Guácharo Activo</option><option>Selva Plus</option><option>Loto Chaima</option><option>La Granjita</option><option>El Guacharito</option><option>Centena</option><option>Centena Plus</option><option>ZooloCasino</option></select>
+          <label style="font-size:11px;color:#666;font-weight:600;display:block;margin-bottom:5px">HORARIO</label>
+          <select class="adm-select" id="res-horario"><option value="">Selecciona horario</option><option>8:00 AM</option><option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option><option>12:00 PM</option><option>1:00 PM</option><option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option><option>5:00 PM</option><option>6:00 PM</option><option>7:00 PM</option></select>
+          <label style="font-size:11px;color:#666;font-weight:600;display:block;margin-bottom:5px">ANIMAL GANADOR</label>
+          <select class="adm-select" id="res-animal"><option value="">Selecciona animal ganador</option></select>
+          <button class="adm-btn success" id="btn-ingresar-resultado">✅ Registrar resultado</button>
+        </div>
+        <div class="adm-card">
+          <div class="adm-form-title">Últimos resultados registrados</div>
+          <div style="overflow-y:auto;max-height:280px">
+            <table class="adm-table"><thead><tr><th>Fecha</th><th>Lotería</th><th>Horario</th><th>Animal</th></tr></thead><tbody id="resultados-adm-tbody"><tr><td colspan="4" style="text-align:center;padding:18px;color:#999">Sin resultados</td></tr></tbody></table>
+          </div>
+          <button class="adm-btn" style="margin-top:9px" id="btn-refresh-resultados">🔄 Actualizar</button>
+        </div>
+      </div>
+    </div>
+    <div class="adm-section" id="adm-config">
+      <div class="adm-title">⚙️ Configuración</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="adm-card">
+          <div class="adm-form-title">Crear cuenta de administrador</div>
+          <p style="font-size:12px;color:#666;margin-bottom:11px">Crea un administrador para acceder a este panel.</p>
+          <label style="font-size:11px;color:#666;font-weight:600;display:block;margin-bottom:5px">CORREO ADMIN</label>
+          <input class="adm-input" type="email" id="adm-email" placeholder="admin@venesorteo.com">
+          <label style="font-size:11px;color:#666;font-weight:600;display:block;margin-bottom:5px">CONTRASEÑA</label>
+          <input class="adm-input" type="password" id="adm-pass" placeholder="Contraseña segura">
+          <button class="adm-btn success" id="btn-crear-admin">✅ Crear administrador</button>
+        </div>
+        <div class="adm-card">
+          <div class="adm-form-title">Premio acumulado semanal</div>
+          <p style="font-size:12px;color:#666;margin-bottom:11px">Se acumula automáticamente 1.5% por apuesta. También puedes ajustarlo manualmente.</p>
+          <div class="adm-stat" style="margin-bottom:13px"><div class="adm-stat-icon">🏆</div><div class="adm-stat-val" id="adm-premio-config">-</div><div class="adm-stat-label">Premio actual</div></div>
+          <label style="font-size:11px;color:#666;font-weight:600;display:block;margin-bottom:5px">NUEVO MONTO (Bs)</label>
+          <input class="adm-input" type="number" id="adm-premio-input" placeholder="0.00">
+          <button class="adm-btn warning" id="btn-ajustar-premio">💰 Actualizar premio</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== FIREBASE CONFIG =====
+const firebaseConfig = {
+  apiKey: "AIzaSyCj7nfEz1VLY6OG_vZYkPaBmvGmP3gyKGE",
+  authDomain: "venesorteo.firebaseapp.com",
+  projectId: "venesorteo",
+  storageBucket: "venesorteo.firebasestorage.app",
+  messagingSenderId: "609231158703",
+  appId: "1:609231158703:web:1f56fc5a7026b53c73835a"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ===== DATOS =====
+const LOTERIAS = [
+  {id:'lotto-activo',name:'Lotto Activo',emoji:'🎯',bg:'linear-gradient(135deg,#1a3a7a,#0d2050)',horarios:['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM']},
+  {id:'lotto-inter',name:'Lotto Internacional',emoji:'🌍',bg:'linear-gradient(135deg,#3a1a7a,#200d50)',horarios:['8:30 AM','9:30 AM','10:30 AM','11:30 AM','12:30 PM','1:30 PM','2:30 PM','3:30 PM','4:30 PM','5:30 PM','6:30 PM','7:30 PM']},
+  {id:'mega-animal',name:'Mega Animal 40',emoji:'🦁',bg:'linear-gradient(135deg,#7a1a1a,#500d0d)',horarios:['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM']},
+  {id:'monje',name:'Monje Millonario',emoji:'🧙',bg:'linear-gradient(135deg,#1a5a2a,#0d3a1a)',horarios:['8:05 AM','9:05 AM','10:05 AM','11:05 AM','12:05 PM','1:05 PM','2:05 PM','3:05 PM','4:05 PM','5:05 PM','6:05 PM','7:05 PM']},
+  {id:'guacharo',name:'Guácharo Activo',emoji:'🦜',bg:'linear-gradient(135deg,#7a3a1a,#503a0d)',horarios:['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM']},
+  {id:'selva',name:'Selva Plus',emoji:'🌿',bg:'linear-gradient(135deg,#1a2a6a,#0d1a45)',horarios:['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM']},
+  {id:'chaima',name:'Loto Chaima',emoji:'🐢',bg:'linear-gradient(135deg,#1a5a5a,#0d3a3a)',horarios:['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM']},
+  {id:'granjita',name:'La Granjita',emoji:'🐔',bg:'linear-gradient(135deg,#5a1a3a,#3a0d25)',horarios:['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM']},
+  {id:'guacharito',name:'El Guacharito',emoji:'🦅',bg:'linear-gradient(135deg,#2a4a1a,#1a3a0d)',horarios:['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM']},
+  {id:'centena',name:'Centena',emoji:'💯',bg:'linear-gradient(135deg,#4a1a5a,#2a0d3a)',horarios:['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM']},
+  {id:'centena-plus',name:'Centena Plus',emoji:'⭐',bg:'linear-gradient(135deg,#1a4a3a,#0d3a2a)',horarios:['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM']},
+  {id:'zoolo',name:'ZooloCasino',emoji:'🎰',bg:'linear-gradient(135deg,#2a2a6a,#1a1a45)',horarios:['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM']},
+];
+const ANIMALES=[
+  {n:'0',e:'🐬',name:'Delfín',c:'g'},{n:'00',e:'🦈',name:'Ballena',c:'g'},
+  {n:'1',e:'🐏',name:'Carnero',c:'r'},{n:'2',e:'🐂',name:'Toro',c:'b'},
+  {n:'3',e:'🦂',name:'Ciempiés',c:'r'},{n:'4',e:'🦂',name:'Alacrán',c:'b'},
+  {n:'5',e:'🦁',name:'León',c:'r'},{n:'6',e:'🐸',name:'Rana',c:'b'},
+  {n:'7',e:'🦜',name:'Perico',c:'r'},{n:'8',e:'🐭',name:'Ratón',c:'b'},
+  {n:'9',e:'🦅',name:'Águila',c:'r'},{n:'10',e:'🐯',name:'Tigre',c:'b'},
+  {n:'11',e:'🐱',name:'Gato',c:'r'},{n:'12',e:'🐴',name:'Caballo',c:'b'},
+  {n:'13',e:'🐒',name:'Mono',c:'r'},{n:'14',e:'🕊️',name:'Paloma',c:'b'},
+  {n:'15',e:'🦊',name:'Zorro',c:'r'},{n:'16',e:'🐻',name:'Oso',c:'b'},
+  {n:'17',e:'🦃',name:'Pavo',c:'r'},{n:'18',e:'🫏',name:'Burro',c:'b'},
+  {n:'19',e:'🐐',name:'Chivo',c:'r'},{n:'20',e:'🐷',name:'Cochino',c:'b'},
+  {n:'21',e:'🐓',name:'Gallo',c:'r'},{n:'22',e:'🐪',name:'Camello',c:'b'},
+  {n:'23',e:'🦓',name:'Cebra',c:'r'},{n:'24',e:'🦎',name:'Iguana',c:'b'},
+  {n:'25',e:'🐔',name:'Gallina',c:'r'},{n:'26',e:'🐄',name:'Vaca',c:'b'},
+  {n:'27',e:'🐕',name:'Perro',c:'r'},{n:'28',e:'🦩',name:'Zamuro',c:'b'},
+  {n:'29',e:'🐘',name:'Elefante',c:'r'},{n:'30',e:'🐊',name:'Caimán',c:'b'},
+  {n:'31',e:'🦫',name:'Lapa',c:'r'},{n:'32',e:'🐿️',name:'Ardilla',c:'b'},
+  {n:'33',e:'🐟',name:'Pescado',c:'r'},{n:'34',e:'🦌',name:'Venado',c:'b'},
+  {n:'35',e:'🦒',name:'Jirafa',c:'r'},{n:'36',e:'🐍',name:'Culebra',c:'b'},
+];
+
+// ===== STATE =====
+let CU=null, CUD=null, CL=LOTERIAS[0];
+let selMonto=0, selHorarios=[], apuestas=[], premioAcumulado=0;
+
+// ===== UTILS =====
+function showToast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function showSection(id){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function fmt(n){return parseFloat(n||0).toFixed(2);}
+function navClick(btn,sec){document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');showSection(sec);}
+function switchTab(tab,btn){document.querySelectorAll('.login-tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.lform').forEach(f=>f.classList.remove('active'));btn.classList.add('active');document.getElementById('lform-'+tab).classList.add('active');}
+function stab(id,btn){document.querySelectorAll('.tab-b').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-sec-b').forEach(s=>s.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');btn.classList.add('active');}
+function stabP(id,btn){document.querySelectorAll('.tab-p').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-section-p').forEach(s=>s.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');btn.classList.add('active');}
+function selMC(el){document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+function selRo(el){el.closest('.radio-g').querySelectorAll('.ro').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');}
+function showAdmSec(id,btn){document.querySelectorAll('.adm-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.adm-nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');btn.classList.add('active');loadAdminData();}
+function checkPass(v){const bar=document.getElementById('pass-bar');if(!bar)return;let s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[@#$!%*?&^()_\-+=]/.test(v))s++;const c=['#e0e0e0','#e05555','#f5a623','#22a050','#1565C0'];bar.style.background=c[s];bar.style.width=(s*25)+'%';}
+function validarPass(p){return p.length>=8&&/[A-Z]/.test(p)&&/[0-9]/.test(p)&&/[@#$!%*?&^()_\-+=]/.test(p);}
+
+// ===== ANIMALS BG =====
+function buildBg(){const bg=document.getElementById('animals-bg');if(!bg)return;const em=['🐬','🦁','🐯','🐒','🦅','🐸','🦜','🐭','🦊','🐻','🦓','🐘','🦒','🐊','🐕','🦃','🐷','🐂','🐏','🦂'];for(let i=0;i<20;i++){const d=document.createElement('div');d.className='animal-float';d.textContent=em[Math.floor(Math.random()*em.length)];d.style.cssText='left:'+Math.random()*94+'%;animation-duration:'+(6+Math.random()*10)+'s;animation-delay:'+(-Math.random()*16)+'s';bg.appendChild(d);}}
+
+// ===== AUTH =====
+auth.onAuthStateChanged(async user=>{
+  if(user){
+    CU=user;
+    const snap=await db.collection('usuarios').doc(user.uid).get();
+    if(snap.exists){
+      CUD=snap.data();
+      if(CUD.rol==='admin'){showPage('page-admin');loadAdminData();}
+      else{showPage('page-app');initApp();}
+    }
+  } else {
+    CU=null;CUD=null;showPage('page-login');
+    setTimeout(()=>openModal('modal-edad'),400);
+    buildBg();
+  }
+});
+
+document.getElementById('btn-login').onclick=async function(){
+  const email=document.getElementById('l-email').value.trim();
+  const pass=document.getElementById('l-pass').value;
+  if(!email||!pass){showToast('⚠️ Completa todos los campos');return;}
+  try{this.textContent='Ingresando...';await auth.signInWithEmailAndPassword(email,pass);}
+  catch(e){this.textContent='Inicia Sesión';showToast(e.code==='auth/invalid-credential'?'❌ Credenciales incorrectas':'❌ Error: '+e.message);}
+};
+
+document.getElementById('btn-registro').onclick=async function(){
+  const nombre=document.getElementById('r-nombre').value.trim();
+  const apellido=document.getElementById('r-apellido').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const prefix=document.getElementById('r-prefix').value;
+  const tel=document.getElementById('r-tel').value.trim();
+  const pass=document.getElementById('r-pass').value;
+  const pass2=document.getElementById('r-pass2').value;
+  const acepto=document.getElementById('acepto').checked;
+  if(!nombre||!apellido||!email||!tel||!pass){showToast('⚠️ Completa todos los campos');return;}
+  if(tel.length!==7||!/^\d{7}$/.test(tel)){showToast('⚠️ Teléfono debe tener 7 dígitos');return;}
+  if(!validarPass(pass)){showToast('⚠️ Contraseña: mín. 8 car., mayúscula, número y símbolo');return;}
+  if(pass!==pass2){showToast('⚠️ Las contraseñas no coinciden');return;}
+  if(!acepto){showToast('⚠️ Acepta los términos y condiciones');return;}
+  try{
+    this.textContent='Creando cuenta...';
+    const cred=await auth.createUserWithEmailAndPassword(email,pass);
+    await db.collection('usuarios').doc(cred.user.uid).set({nombre,apellido,email,telefono:prefix+tel,saldo:0,bono:0,rol:'usuario',estado:'activo',creado:firebase.firestore.FieldValue.serverTimestamp()});
+    showToast('✅ ¡Bienvenido/a a VeneSorteo!');
+  }catch(e){this.textContent='Crear Cuenta';showToast(e.code==='auth/email-already-in-use'?'❌ Este correo ya está registrado':'❌ Error: '+e.message);}
+};
+
+function doLogout(){auth.signOut().then(()=>showToast('Sesión cerrada'));}
+
+// ===== APP =====
+async function initApp(){
+  await updUI();
+  buildLotGrid();
+  loadPremio();
+  startCD();
+}
+
+async function updUI(){
+  if(!CU||!CUD)return;
+  const snap=await db.collection('usuarios').doc(CU.uid).get();
+  if(snap.exists)CUD=snap.data();
+  const s=CUD.saldo||0, n=(CUD.nombre||'')+' '+(CUD.apellido||'');
+  document.getElementById('h-nombre').textContent=n.trim()||'Usuario';
+  document.getElementById('h-avatar').textContent=(CUD.nombre||'U')[0].toUpperCase();
+  document.getElementById('h-saldo').textContent=fmt(s);
+  document.getElementById('b-saldo').innerHTML=fmt(s)+' <span style="font-size:18px;opacity:0.7">Bs</span>';
+  document.getElementById('ret-saldo').textContent=fmt(s)+' Bs';
+  document.getElementById('p-nombre').textContent=n.trim()||'Mi cuenta';
+  document.getElementById('p-handle').textContent='@'+(CUD.email||'').split('@')[0]+' · VeneSorteo';
+  document.getElementById('rep-jugador').textContent=n.trim();
+  const tq=await db.collection('apuestas').where('uid','==',CU.uid).get();
+  const tks=tq.docs.map(d=>d.data());
+  document.getElementById('st-tickets').textContent=tks.length;
+  document.getElementById('st-ganados').textContent=tks.filter(t=>t.estado==='ganado').length;
+}
+
+async function loadPremio(){
+  const snap=await db.collection('config').doc('premio').get();
+  premioAcumulado=snap.exists?(snap.data().monto||0):0;
+  const el=document.getElementById('premio-amount');
+  if(el)el.textContent=fmt(premioAcumulado)+' Bs';
+}
+
+function startCD(){
+  function upd(){const now=new Date();const sun=new Date(now);const d=(7-now.getDay())%7||(now.getHours()<20?0:7);sun.setDate(now.getDate()+d);sun.setHours(20,0,0,0);const diff=sun-now;const h=Math.floor(diff/3600000);const m=Math.floor((diff%3600000)/60000);const s=Math.floor((diff%60000)/1000);const el=document.getElementById('countdown');if(el)el.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+  upd();setInterval(upd,1000);
+}
+
+// ===== LOTERÍAS GRID =====
+function buildLotGrid(){
+  const g=document.getElementById('loterias-grid');if(!g)return;g.innerHTML='';
+  LOTERIAS.forEach((l,i)=>{
+    const d=document.createElement('div');d.className='loteria-card';
+    d.innerHTML='<div class="loteria-img" style="background:'+l.bg+'">'+l.emoji+'</div><div class="loteria-name">'+l.name+'</div>';
+    d.onclick=()=>goAnimalitos(i);
+    g.appendChild(d);
+  });
+}
+
+function goAnimalitos(idx){CL=LOTERIAS[idx];showSection('sec-animalitos');buildAnimUI();}
+
+// ===== ANIMALITOS =====
+function buildAnimUI(){
+  if(!CL)return;
+  const scroll=document.getElementById('anim-lscroll');if(!scroll)return;
+  scroll.innerHTML='';
+  LOTERIAS.forEach((l,i)=>{
+    const d=document.createElement('div');d.className='ltab'+(l.id===CL.id?' active':'');
+    d.innerHTML='<span>'+l.name+'</span>';
+    d.onclick=()=>{document.querySelectorAll('#anim-lscroll .ltab').forEach(t=>t.classList.remove('active'));d.classList.add('active');CL=l;document.getElementById('anim-titulo').textContent=l.emoji+' '+l.name;buildHorarios();selHorarios=[];};
+    scroll.appendChild(d);
+  });
+  document.getElementById('anim-titulo').textContent=CL.emoji+' '+CL.name;
+  buildHorarios();buildTabla();apuestas=[];updPanel();
+}
+
+function buildHorarios(){
+  const g=document.getElementById('horario-grid');if(!g)return;g.innerHTML='';
+  (CL||LOTERIAS[0]).horarios.forEach(h=>{
+    const d=document.createElement('div');d.className='hbtn-h';d.textContent=h;
+    d.onclick=()=>{d.classList.toggle('sel');if(d.classList.contains('sel'))selHorarios.push(h);else selHorarios=selHorarios.filter(x=>x!==h);};
+    g.appendChild(d);
+  });
+}
+
+function buildTabla(){
+  const t=document.getElementById('tabla-anim');if(!t)return;t.innerHTML='';
+  const sr=t.insertRow();const sl=sr.insertCell();sl.style.cssText='width:26px;background:#1a6b2a;';
+  [0,1].forEach(idx=>{const a=ANIMALES[idx];const td=sr.insertCell();td.colSpan=2;td.className='spc';td.innerHTML='<div class="spn">'+a.n+'</div><div class="spemi">'+a.e+'</div><div class="spname">'+a.name+'</div>';td.onclick=()=>selA(td,idx);});
+  const rows=[{nums:[1,2,3],pi:'Par',d12:'1ra 12',r:'1-18',rs6:true},{nums:[4,5,6]},{nums:[7,8,9]},{nums:[10,11,12]},{nums:[13,14,15]},{nums:[16,17,18]},{nums:[19,20,21],pi:'Rojo',d12:'2da 12',r:'19-36',rs6:true},{nums:[22,23,24]},{nums:[25,26,27],pi:'Impar',d12:'3ra 12'},{nums:[28,29,30]},{nums:[31,32,33]},{nums:[34,35,36]}];
+  rows.forEach(row=>{
+    const tr=t.insertRow();
+    if(row.pi){const td=tr.insertCell();td.rowSpan=row.rs6?6:3;td.className='side';td.style.cssText='width:26px;background:'+(row.pi==='Rojo'?'#c0392b':row.pi==='Impar'?'#1a1a1a':'#1a6b2a');td.textContent=row.pi;}
+    if(row.d12){const td=tr.insertCell();td.rowSpan=row.rs6?6:3;td.className='side';td.style.cssText='width:26px;background:#1a6b2a';td.textContent=row.d12;}
+    if(row.r){const td=tr.insertCell();td.rowSpan=6;td.className='side';td.style.cssText='width:26px;background:#1a6b2a';td.textContent=row.r;}
+    row.nums.forEach(num=>{const a=ANIMALES[num+1];const td=tr.insertCell();td.className='ac '+(a.c==='r'?'cr':'cb');td.innerHTML='<div class="an">'+a.n+'</div><span class="ae">'+a.e+'</span><div class="anm">'+a.name+'</div>';td.onclick=()=>selA(td,num+1);});
+  });
+  const pr=t.insertRow();const pbl=pr.insertCell();pbl.colSpan=3;pbl.style.background='white';
+  [0,1,2].forEach(()=>{const td=pr.insertCell();td.className='pc';td.textContent='2-1';});
+}
+
+function selA(el,idx){
+  if(selMonto===0){showToast('⚠️ Primero selecciona un monto');return;}
+  if(selHorarios.length===0){showToast('⚠️ Primero selecciona al menos un horario');return;}
+  el.classList.toggle('sel');
+  const a=ANIMALES[idx];
+  if(el.classList.contains('sel')){selHorarios.forEach(h=>{apuestas.push({animal:a,horario:h,monto:selMonto,loteria:CL.name});});}
+  else{apuestas=apuestas.filter(x=>x.animal.n!==a.n);}
+  updPanel();
+  document.getElementById('anim-total').textContent=fmt(apuestas.reduce((s,a)=>s+a.monto,0))+' Bs';
+}
+
+// Fichas
+document.querySelectorAll('.ficha').forEach(f=>{
+  f.onclick=function(){
+    const v=parseFloat(this.dataset.monto);
+    if(v===0){const c=prompt('Monto personalizado (Bs):');if(c&&!isNaN(c)&&parseFloat(c)>0){selMonto=parseFloat(c);document.querySelectorAll('.ficha').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');showToast('💰 Monto: '+selMonto+' Bs');return;}}
+    document.querySelectorAll('.ficha').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');selMonto=v;
+  };
+});
+
+function limpiarApuesta(){apuestas=[];selMonto=0;selHorarios=[];document.querySelectorAll('.ficha').forEach(f=>f.classList.remove('sel'));document.querySelectorAll('.ac,.spc').forEach(c=>c.classList.remove('sel'));document.querySelectorAll('.hbtn-h').forEach(b=>b.classList.remove('sel'));updPanel();document.getElementById('anim-total').textContent='0.00 Bs';}
+
+function updPanel(){
+  const wrap=document.getElementById('panel-apuestas'),footer=document.getElementById('panel-footer');if(!wrap)return;
+  if(apuestas.length===0){wrap.innerHTML='<div class="empty-panel"><i class="ti ti-paw"></i><p>Selecciona un animal para comenzar</p></div>';if(footer)footer.style.display='none';return;}
+  if(footer)footer.style.display='block';
+  const total=apuestas.reduce((s,a)=>s+a.monto,0);
+  document.getElementById('panel-total-amt').textContent=fmt(total)+' Bs';
+  wrap.innerHTML=apuestas.map((a,i)=>'<div class="apuesta-item"><div class="apuesta-emoji">'+a.animal.e+'</div><div class="apuesta-info"><div class="apuesta-name">'+a.animal.name+' #'+a.animal.n+'</div><div class="apuesta-detail">'+a.loteria+' · '+a.horario+'</div></div><div class="apuesta-monto">'+a.monto+' Bs</div><button class="apuesta-del" onclick="eliminarApuesta('+i+')"><i class="ti ti-trash"></i></button></div>').join('');
+}
+
+function eliminarApuesta(i){apuestas.splice(i,1);updPanel();}
+
+// Procesar
+document.getElementById('btn-procesar').onclick=
+document.getElementById('btn-confirmar-panel').onclick=procesarApuesta;
+
+function procesarApuesta(){
+  if(apuestas.length===0){showToast('⚠️ Agrega al menos un animal');return;}
+  const total=apuestas.reduce((s,a)=>s+a.monto,0);
+  const saldo=CUD?.saldo||0;
+  if(saldo<total){openModal('modal-saldo');return;}
+  const now=new Date();
+  document.getElementById('det-fecha').textContent=now.toLocaleDateString('es-VE')+' · '+now.toLocaleTimeString('es-VE');
+  document.getElementById('det-total-top').textContent=fmt(total);
+  document.getElementById('det-loteria-banner').textContent=CL.name;
+  document.getElementById('det-tbody').innerHTML=apuestas.map(a=>'<tr><td>'+a.horario+'</td><td>'+a.animal.e+' '+a.animal.name+' #'+a.animal.n+'</td><td style="color:#1a4a8a;font-weight:700">'+a.monto+' Bs</td></tr>').join('')+'<tr style="background:#1a4a8a"><td colspan="2" style="color:white;font-weight:700">Total</td><td style="color:#f5a623;font-weight:900">'+fmt(total)+' Bs</td></tr>';
+  openModal('modal-detalle');
+}
+
+document.getElementById('btn-confirmar-apuesta').onclick=async function(){
+  const total=apuestas.reduce((s,a)=>s+a.monto,0);
+  try{
+    await db.collection('usuarios').doc(CU.uid).update({saldo:firebase.firestore.FieldValue.increment(-total)});
+    await db.collection('config').doc('premio').set({monto:firebase.firestore.FieldValue.increment(total*0.015)},{merge:true});
+    const now=new Date();
+    const batch=db.batch();
+    apuestas.forEach(a=>{
+      const ref=db.collection('apuestas').doc();
+      batch.set(ref,{uid:CU.uid,email:CU.email,jugador:(CUD.nombre||'')+' '+(CUD.apellido||''),telefono:CUD.telefono||'',loteria:a.loteria,animal:a.animal.name,numero:a.animal.n,emoji:a.animal.e,horario:a.horario,monto:a.monto,estado:'pendiente',fecha:now.toLocaleDateString('es-VE'),hora:now.toLocaleTimeString('es-VE'),timestamp:firebase.firestore.FieldValue.serverTimestamp()});
+    });
+    await batch.commit();
+    closeModal('modal-detalle');
+    const tel=(CUD.telefono||'').replace(/\D/g,'');
+    const msg='🎰 *VeneSorteo* — Apuesta confirmada\n📋 *'+CL.name+'*\n'+apuestas.map(a=>'• '+a.animal.e+' '+a.animal.name+' #'+a.animal.n+' — '+a.horario+' — '+a.monto+' Bs').join('\n')+'\n💰 *Total: '+fmt(total)+' Bs*\n📅 '+now.toLocaleString('es-VE');
+    if(tel.length>=10)window.open('https://wa.me/58'+tel.slice(1)+'?text='+encodeURIComponent(msg),'_blank');
+    limpiarApuesta();await updUI();await loadPremio();
+    showToast('✅ Apuesta confirmada. Resumen por WhatsApp.');
+  }catch(e){showToast('❌ Error: '+e.message);}
+};
+
+// ===== REPORTAR PAGO =====
+document.getElementById('btn-reportar').onclick=async function(){
+  const banco=document.getElementById('rep-banco').value;
+  const origen=document.getElementById('rep-origen').value;
+  const fecha=document.getElementById('rep-fecha').value;
+  const monto=document.getElementById('rep-monto').value;
+  const ref=document.getElementById('rep-ref').value;
+  const prefix=document.getElementById('rep-prefix').value;
+  const tel=document.getElementById('rep-tel').value;
+  if(!banco||!origen||!fecha||!monto||!tel){showToast('⚠️ Completa todos los campos');return;}
+  if(tel.length!==7){showToast('⚠️ Teléfono debe tener 7 dígitos');return;}
+  try{
+    await db.collection('pagos').add({uid:CU.uid,jugador:(CUD.nombre||'')+' '+(CUD.apellido||''),email:CU.email,telefono:prefix+tel,banco,origen,fecha,monto:parseFloat(monto),referencia:ref,estado:'pendiente',timestamp:firebase.firestore.FieldValue.serverTimestamp()});
+    showToast('✅ Pago reportado. El admin lo revisará pronto.');
+    document.getElementById('rep-banco').value='';document.getElementById('rep-origen').value='';document.getElementById('rep-monto').value='';document.getElementById('rep-ref').value='';document.getElementById('rep-tel').value='';
+  }catch(e){showToast('❌ Error: '+e.message);}
+};
+
+// ===== TICKETS =====
+async function loadTickets(){
+  if(!CU)return;
+  try{
+    const q=await db.collection('apuestas').where('uid','==',CU.uid).orderBy('timestamp','desc').get();
+    const tks=q.docs.map(d=>({id:d.id,...d.data()}));
+    document.getElementById('tk-total').textContent=tks.length;
+    document.getElementById('tk-gan').textContent=tks.filter(t=>t.estado==='ganado').length;
+    document.getElementById('tk-pen').textContent=tks.filter(t=>t.estado==='pendiente').length;
+    document.getElementById('tk-per').textContent=tks.filter(t=>t.estado==='perdido').length;
+    const tbody=document.getElementById('tk-tbody');
+    if(!tks.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:#999">No tienes tickets aún</td></tr>';return;}
+    tbody.innerHTML=tks.map(t=>{
+      const scls=t.estado==='ganado'?'sp-ganado':t.estado==='pendiente'?'sp-pend':'sp-perdido';
+      const slbl=t.estado==='ganado'?'✅ Ganado':t.estado==='pendiente'?'⏳ Pendiente':'❌ Perdido';
+      return '<tr><td style="font-family:monospace;font-size:11px">'+t.id.slice(0,12)+'...</td><td>'+t.fecha+' '+( t.hora||'')+'</td><td>'+t.loteria+'</td><td><span class="status-pill '+scls+'">'+slbl+'</span></td><td style="font-weight:700;color:#1a4a8a">'+t.monto+' Bs</td><td><button class="btn-ver-mas" onclick="alert(\'Animal: '+t.emoji+' '+t.animal+' #'+t.numero+'\\\\nHorario: '+t.horario+'\\\\nMonto: '+t.monto+' Bs\\\\nEstado: '+t.estado+'\')">Ver más</button></td></tr>';
+    }).join('');
+  }catch(e){showToast('❌ Error cargando tickets: '+e.message);}
+}
+
+// ===== RESULTADOS =====
+async function loadResultados(){
+  try{
+    const snap=await db.collection('resultados').orderBy('timestamp','desc').limit(20).get();
+    const items=snap.docs.map(d=>d.data());
+    const lista=document.getElementById('resultados-lista');
+    if(!items.length){lista.innerHTML='<div style="text-align:center;padding:30px;color:#999">No hay resultados registrados aún</div>';return;}
+    lista.innerHTML=items.map((r,i)=>'<div class="res-card'+(i===0?' win':'')+'"><div class="res-emoji">'+r.emoji+'</div><div class="res-info"><div class="res-loteria">'+r.loteria+'</div><div class="res-animal">'+r.animal+'</div><div class="res-num">Número '+r.numero+'</div></div><div class="res-right"><div class="res-hora">'+r.horario+'</div><div class="res-fecha">'+r.fecha+'</div>'+(i===0?'<span class="status-pill sp-ganado" style="margin-top:4px;display:inline-block">🏆 Ganador</span>':'')+'</div></div>').join('');
+  }catch(e){console.log(e);}
+}
+
+// ===== ADMIN =====
+async function loadAdminData(){
+  try{
+    const [uSnap,aSnap,pSnap,premSnap]=await Promise.all([
+      db.collection('usuarios').get(),
+      db.collection('apuestas').get(),
+      db.collection('pagos').get(),
+      db.collection('config').doc('premio').get()
+    ]);
+    const users=uSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const aps=aSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const pags=pSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const prem=premSnap.exists?premSnap.data().monto||0:0;
+
+    ['adm-users','adm-apuestas','adm-ingresos','adm-pagos-pend','adm-premio','adm-premio-config'].forEach(id=>{const el=document.getElementById(id);if(el){if(id==='adm-users')el.textContent=users.filter(u=>u.rol!=='admin').length;else if(id==='adm-apuestas')el.textContent=aps.length;else if(id==='adm-ingresos')el.textContent=fmt(aps.reduce((s,a)=>s+(a.monto||0),0))+' Bs';else if(id==='adm-pagos-pend')el.textContent=pags.filter(p=>p.estado==='pendiente').length;else if(id==='adm-premio'||id==='adm-premio-config')el.textContent=fmt(prem)+' Bs';}});
+
+    // Tabla usuarios
+    const ub=document.getElementById('adm-users-tbody');
+    if(ub)ub.innerHTML=users.filter(u=>u.rol!=='admin').map(u=>'<tr><td>'+u.nombre+' '+u.apellido+'</td><td>'+u.email+'</td><td>'+(u.telefono||'-')+'</td><td style="font-weight:700;color:#1a4a8a">'+fmt(u.saldo||0)+' Bs</td><td><span class="status-pill '+(u.estado==='activo'?'sp-ganado':'sp-perdido')+'">'+(u.estado||'activo')+'</span></td><td><button class="btn-ver-mas" onclick="abonarSaldo(\''+u.id+'\',\''+u.nombre+' '+u.apellido+'\')">💰 Abonar</button> <button class="btn-ver-mas" style="background:'+(u.estado==='activo'?'#e05555':'#22a050')+';margin-left:3px" onclick="toggleUser(\''+u.id+'\',\''+(u.estado||'activo')+'\')"><i class="ti ti-'+(u.estado==='activo'?'ban':'check')+'"></i> '+(u.estado==='activo'?'Suspender':'Activar')+'</button></td></tr>').join('');
+
+    // Tabla apuestas
+    const ab=document.getElementById('adm-apuestas-tbody');
+    if(ab)ab.innerHTML=aps.slice(0,50).map(a=>'<tr><td style="font-size:11px;font-family:monospace">'+a.id.slice(0,10)+'...</td><td>'+(a.jugador||a.email||'')+'</td><td>'+(a.loteria||'')+'</td><td>'+(a.emoji||'')+' '+(a.animal||'')+' #'+(a.numero||'')+'</td><td>'+(a.horario||'')+'</td><td>'+(a.fecha||'')+'</td><td><span class="status-pill '+(a.estado==='ganado'?'sp-ganado':a.estado==='pendiente'?'sp-pend':'sp-perdido')+'">'+(a.estado||'pendiente')+'</span></td><td style="font-weight:700">'+(a.monto||0)+' Bs</td><td><button class="btn-ver-mas" style="background:#22a050" onclick="marcarApuesta(\''+a.id+'\',\'ganado\')">✅ Ganó</button> <button class="btn-ver-mas" style="background:#e05555;margin-left:3px" onclick="marcarApuesta(\''+a.id+'\',\'perdido\')">❌ Perdió</button></td></tr>').join('');
+
+    // Tabla pagos
+    const pb=document.getElementById('adm-pagos-tbody');
+    if(pb)pb.innerHTML=pags.map(p=>'<tr><td>'+(p.jugador||p.email||'')+'</td><td>'+(p.banco||'')+'</td><td>'+(p.origen||'')+'</td><td>'+(p.fecha||'')+'</td><td style="font-weight:700;color:#1a4a8a">'+fmt(p.monto||0)+' Bs</td><td>'+(p.referencia||'-')+'</td><td><span class="status-pill '+(p.estado==='aprobado'?'sp-ganado':p.estado==='rechazado'?'sp-perdido':'sp-pend')+'">'+(p.estado||'pendiente')+'</span></td><td><button class="btn-ver-mas" style="background:#22a050" onclick="aprobarPago(\''+p.id+'\',\''+(p.uid||'')+'\','+(p.monto||0)+')">✅ Aprobar</button> <button class="btn-ver-mas" style="background:#e05555;margin-left:3px" onclick="rechazarPago(\''+p.id+'\')">❌ Rechazar</button></td></tr>').join('');
+
+    // Resultados admin
+    const rsnap=await db.collection('resultados').orderBy('timestamp','desc').limit(20).get();
+    const rb=document.getElementById('resultados-adm-tbody');
+    if(rb){const ritems=rsnap.docs.map(d=>d.data());rb.innerHTML=ritems.length?ritems.map(r=>'<tr><td>'+r.fecha+'</td><td>'+r.loteria+'</td><td>'+r.horario+'</td><td>'+r.emoji+' '+r.animal+' #'+r.numero+'</td></tr>').join(''):'<tr><td colspan="4" style="text-align:center;padding:16px;color:#999">Sin resultados</td></tr>';}
+  }catch(e){console.log('Admin error:',e);}
+}
+
+async function abonarSaldo(uid,nombre){
+  const m=prompt('Abonar saldo a '+nombre+'\n¿Cuántos Bs agregar?');
+  if(!m||isNaN(m)||parseFloat(m)<=0)return;
+  try{await db.collection('usuarios').doc(uid).update({saldo:firebase.firestore.FieldValue.increment(parseFloat(m))});showToast('✅ Se abonaron '+m+' Bs a '+nombre);loadAdminData();}
+  catch(e){showToast('❌ Error: '+e.message);}
+}
+
+async function toggleUser(uid,estado){
+  const nuevo=estado==='activo'?'suspendido':'activo';
+  try{await db.collection('usuarios').doc(uid).update({estado:nuevo});showToast('✅ Usuario '+nuevo);loadAdminData();}
+  catch(e){showToast('❌ Error: '+e.message);}
+}
+
+async function marcarApuesta(id,estado){
+  try{await db.collection('apuestas').doc(id).update({estado});showToast('✅ Apuesta marcada como '+estado);loadAdminData();}
+  catch(e){showToast('❌ Error: '+e.message);}
+}
+
+async function aprobarPago(pagoId,uid,monto){
+  try{
+    await db.collection('pagos').doc(pagoId).update({estado:'aprobado'});
+    if(uid)await db.collection('usuarios').doc(uid).update({saldo:firebase.firestore.FieldValue.increment(monto)});
+    showToast('✅ Pago aprobado. Se abonaron '+monto+' Bs.');loadAdminData();
+  }catch(e){showToast('❌ Error: '+e.message);}
+}
+
+async function rechazarPago(id){
+  try{await db.collection('pagos').doc(id).update({estado:'rechazado'});showToast('✅ Pago rechazado');loadAdminData();}
+  catch(e){showToast('❌ Error: '+e.message);}
+}
+
+// Ingresar resultado
+document.getElementById('btn-ingresar-resultado').onclick=async function(){
+  const loteria=document.getElementById('res-loteria').value;
+  const horario=document.getElementById('res-horario').value;
+  const aIdx=parseInt(document.getElementById('res-animal').value);
+  if(!loteria||!horario||isNaN(aIdx)){showToast('⚠️ Completa todos los campos');return;}
+  const a=ANIMALES[aIdx];
+  try{
+    await db.collection('resultados').add({loteria,horario,animal:a.name,numero:a.n,emoji:a.e,fecha:new Date().toLocaleDateString('es-VE'),timestamp:firebase.firestore.FieldValue.serverTimestamp()});
+    showToast('✅ Resultado registrado: '+a.emoji+' '+a.name+' en '+loteria+' '+horario);
+    document.getElementById('res-loteria').value='';document.getElementById('res-horario').value='';document.getElementById('res-animal').value='';
+    loadAdminData();
+  }catch(e){showToast('❌ Error: '+e.message);}
+};
+
+document.getElementById('btn-refresh-resultados').onclick=loadAdminData;
+
+// Crear admin
+document.getElementById('btn-crear-admin').onclick=async function(){
+  const email=document.getElementById('adm-email').value.trim();
+  const pass=document.getElementById('adm-pass').value;
+  if(!email||!pass){showToast('⚠️ Completa los campos');return;}
+  try{
+    const cred=await auth.createUserWithEmailAndPassword(email,pass);
+    await db.collection('usuarios').doc(cred.user.uid).set({nombre:'Admin',apellido:'VeneSorteo',email,telefono:'',saldo:0,bono:0,rol:'admin',estado:'activo',creado:firebase.firestore.FieldValue.serverTimestamp()});
+    showToast('✅ Admin creado: '+email);
+  }catch(e){showToast('❌ Error: '+e.message);}
+};
+
+// Ajustar premio
+document.getElementById('btn-ajustar-premio').onclick=async function(){
+  const m=parseFloat(document.getElementById('adm-premio-input').value);
+  if(isNaN(m)||m<0){showToast('⚠️ Ingresa un monto válido');return;}
+  try{await db.collection('config').doc('premio').set({monto:m},{merge:true});showToast('✅ Premio actualizado: '+fmt(m)+' Bs');loadAdminData();}
+  catch(e){showToast('❌ Error: '+e.message);}
+};
+
+// Poblar select de animales
+(function(){const sel=document.getElementById('res-animal');if(sel){ANIMALES.forEach((a,i)=>{const o=document.createElement('option');o.value=i;o.textContent=a.e+' '+a.name+' (#'+a.n+')';sel.appendChild(o);});}})();
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded',buildBg);
+</script>
+</body>
+</html>
