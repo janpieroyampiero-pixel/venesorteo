@@ -1,3 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VeneSorteo — Tu Lotería Online</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5}
+.page{display:none;min-height:100vh}.page.active{display:block}
+:root{--azul:#1a4a8a;--azul-dark:#0d2d5e;--dorado:#f5a623;--verde:#22a050;--rojo:#c0392b}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:12px 24px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;border-left:4px solid var(--dorado);white-space:nowrap}
+.toast.show{opacity:1}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:white;border-radius:16px;padding:28px;max-width:520px;width:90%;position:relative;max-height:90vh;overflow-y:auto}
+#page-login{background:#1a4a8a;overflow:hidden;position:relative}
+.animals-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+.animal-float{position:absolute;width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;animation:floatUp linear infinite;background:rgba(26,74,138,0.75);border:2px solid rgba(255,255,255,0.15)}
+@keyframes floatUp{0%{transform:translateY(110vh);opacity:0}10%{opacity:0.9}90%{opacity:0.9}100%{transform:translateY(-20vh);opacity:0}}
+.login-center{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:rgba(13,45,94,0.95);border-radius:20px;padding:32px 26px;width:100%;max-width:400px;border:1px solid rgba(255,255,255,0.15)}
+.login-logo{text-align:center;margin-bottom:22px}
+.login-logo-icon{width:70px;height:70px;background:var(--dorado);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 10px}
+.login-logo h1{color:var(--dorado);font-size:24px;font-weight:900}
+.login-logo p{color:rgba(255,255,255,0.5);font-size:12px;margin-top:3px}
+.login-tabs{display:flex;background:rgba(0,0,0,0.3);border-radius:10px;padding:3px;gap:3px;margin-bottom:18px}
+.login-tab{flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:rgba(255,255,255,0.5);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.login-tab.active{background:var(--dorado);color:white}
+.lform{display:none}.lform.active{display:block}
+.fg{margin-bottom:11px}
+.fl{color:rgba(255,255,255,0.55);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;display:block}
+.fi-wrap{position:relative}.fi-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.35);font-size:17px}
+.fi{width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:11px 12px 11px 40px;color:white;font-size:14px;outline:none}
+.fi:focus{border-color:var(--dorado)}.fi::placeholder{color:rgba(255,255,255,0.25)}
+.fi-select{width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:11px 12px;color:white;font-size:14px;outline:none;appearance:none}
+.fi-select option{background:#0d2d5e}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tel-wrap{display:flex;gap:6px}
+.tel-prefix{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:11px 10px;color:white;font-size:14px;outline:none;appearance:none;width:110px;flex-shrink:0}
+.tel-prefix option{background:#0d2d5e}
+.tel-num{flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:11px 12px;color:white;font-size:14px;outline:none}
+.tel-num:focus{border-color:var(--dorado)}.tel-num::placeholder{color:rgba(255,255,255,0.25)}
+.pass-bar{height:4px;border-radius:4px;margin-top:5px;background:rgba(255,255,255,0.1);transition:all 0.3s;width:0%}
+.pass-hint{font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;line-height:1.4}
+.btn-gold{width:100%;background:var(--dorado);border:none;border-radius:11px;padding:13px;color:white;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
+.check-wrap{display:flex;align-items:flex-start;gap:8px;margin-bottom:11px}
+.check-wrap input{width:16px;height:16px;margin-top:2px;accent-color:var(--dorado);flex-shrink:0}
+.check-wrap label{color:rgba(255,255,255,0.6);font-size:12px;line-height:1.4}
+.check-wrap a{color:var(--dorado);cursor:pointer;text-decoration:underline}
+.remember-wrap{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+.remember-wrap input{accent-color:var(--dorado)}
+.remember-wrap label{color:rgba(255,255,255,0.55);font-size:12px}
+.forgot-link{text-align:center;margin-top:10px}
+.forgot-link a{color:var(--dorado);font-size:12px;cursor:pointer}
+.modal-edad{text-align:center;padding:36px 24px}
+.edad-icon{width:78px;height:78px;border-radius:50%;border:3px solid var(--azul);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;font-weight:900;color:var(--azul)}
+.modal-edad h2{color:var(--azul);font-size:20px;font-weight:700;margin-bottom:10px}
+.modal-edad p{color:#666;font-size:13px;line-height:1.5;margin-bottom:22px}
+.btn-si{background:var(--azul);color:white;border:none;border-radius:22px;padding:12px 34px;font-size:14px;font-weight:700;cursor:pointer;margin-right:10px}
+.btn-no{background:white;color:var(--azul);border:2px solid var(--azul);border-radius:22px;padding:10px 34px;font-size:14px;font-weight:700;cursor:pointer}
+.terminos-content{font-size:12px;color:#333;line-height:1.7}
+.terminos-content h3{color:var(--azul);font-size:13px;margin:13px 0 5px;font-weight:700}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--azul)}
+.modal-header h2{color:var(--azul);font-size:15px;font-weight:700}
+.modal-close{background:var(--dorado);border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;color:white;display:flex;align-items:center;justify-content:center}
+#page-app,#page-admin{background:#f0f2f5}
+.app-header{background:linear-gradient(135deg,var(--azul-dark),var(--azul));position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.3)}
+.app-header-top{display:flex;align-items:center;justify-content:space-between;padding:10px 20px}
+.app-logo{display:flex;align-items:center;gap:8px}
+.app-logo-icon{width:40px;height:40px;background:var(--dorado);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.app-logo-text{color:var(--dorado);font-size:17px;font-weight:900}
+.app-logo-sub{color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:2px;text-transform:uppercase}
+.saldo-badge{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:18px;padding:5px 14px}
+.saldo-badge span{color:var(--dorado);font-size:14px;font-weight:700}
+.user-chip{display:flex;align-items:center;gap:8px;cursor:pointer}
+.user-avatar{width:34px;height:34px;background:var(--dorado);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:13px}
+.user-name{color:white;font-size:12px;font-weight:600}
+.user-role{color:rgba(255,255,255,0.4);font-size:10px}
+.hbtn{background:none;border:none;color:rgba(255,255,255,0.6);font-size:19px;cursor:pointer;padding:6px;border-radius:8px}
+.app-nav{display:flex;align-items:center;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+.app-nav::-webkit-scrollbar{display:none}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 13px;cursor:pointer;border:none;background:none;color:rgba(255,255,255,0.55);border-bottom:3px solid transparent;transition:all 0.2s;white-space:nowrap;flex-shrink:0}
+.nav-btn.active{color:var(--dorado);border-bottom-color:var(--dorado)}
+.nav-btn i{font-size:18px}.nav-btn span{font-size:11px;font-weight:600}.nav-btn small{font-size:9px;opacity:0.6}
+.app-main{max-width:1200px;margin:0 auto;padding:20px}
+.section{display:none}.section.active{display:block}
+.sec-title{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:#ddd}
+.banner-premio{background:linear-gradient(135deg,var(--azul-dark),var(--azul));border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.bp-label{color:rgba(255,255,255,0.55);font-size:10px;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px}
+.bp-amount{font-size:38px;font-weight:900;color:var(--dorado)}
+.bp-sub{color:rgba(255,255,255,0.45);font-size:11px;margin-top:3px}
+.bp-cd{background:rgba(255,255,255,0.08);border-radius:10px;padding:10px 16px;text-align:center}
+.bp-cd-label{color:rgba(255,255,255,0.45);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.bp-cd-time{color:var(--dorado);font-size:20px;font-weight:900;font-family:monospace}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat-card{background:white;border-radius:12px;padding:14px;box-shadow:0 2px 6px rgba(0,0,0,0.07);display:flex;align-items:center;gap:11px}
+.stat-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.stat-val{font-size:21px;font-weight:900;color:#1a1a1a}
+.stat-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-top:1px}
+.loterias-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-bottom:22px}
+.loteria-card{background:white;border-radius:11px;overflow:hidden;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 2px 5px rgba(0,0,0,0.07)}
+.loteria-card:hover{transform:translateY(-3px);box-shadow:0 8px 16px rgba(0,0,0,0.13)}
+.loteria-img{width:100%;height:82px;display:flex;align-items:center;justify-content:center;font-size:38px}
+.loteria-name{padding:7px;text-align:center;font-size:11px;font-weight:600;color:#1a1a1a;background:#f8f9fa;border-top:1px solid #eee}
+.tipos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tipo-card{background:white;border-radius:12px;padding:16px;cursor:pointer;transition:all 0.15s;box-shadow:0 2px 5px rgba(0,0,0,0.07);display:flex;flex-direction:column;align-items:center;gap:8px;border:2px solid transparent}
+.tipo-card:hover{border-color:var(--azul)}
+.tipo-icon{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.tipo-name{font-size:14px;font-weight:700;color:#1a1a1a}
+.tipo-desc{font-size:11px;color:#999;text-align:center}
+.anim-layout{display:grid;grid-template-columns:1fr 310px;gap:16px;align-items:start}
+.loterias-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;scrollbar-width:none}
+.loterias-scroll::-webkit-scrollbar{display:none}
+.ltab{flex-shrink:0;background:#f0f2f5;border:2px solid transparent;border-radius:9px;padding:5px 11px;cursor:pointer;transition:all 0.15s}
+.ltab.active{background:var(--azul);border-color:var(--azul)}
+.ltab span{font-size:11px;color:#666;font-weight:600;white-space:nowrap}
+.ltab.active span{color:white}
+.anim-titulo{text-align:center;font-size:17px;font-weight:700;color:#1a1a1a;margin-bottom:11px}
+.horario-box{background:white;border-radius:12px;padding:13px;margin-bottom:12px;box-shadow:0 2px 5px rgba(0,0,0,0.07)}
+.horario-title{text-align:center;font-size:10px;font-weight:700;color:var(--azul);text-transform:uppercase;letter-spacing:2px;margin-bottom:9px}
+.horario-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.hbtn-h{background:#f0f2f5;border:1.5px solid #ddd;border-radius:7px;padding:7px 3px;text-align:center;cursor:pointer;font-size:11px;font-weight:500;color:#555;transition:all 0.15s}
+.hbtn-h.sel{background:var(--azul);border-color:var(--azul);color:white;font-weight:700}
+.procesar-row{display:flex;gap:8px;margin-bottom:12px}
+.btn-procesar{flex:1;background:var(--azul);border:none;border-radius:9px;padding:11px;color:white;font-size:13px;font-weight:700;cursor:pointer}
+.btn-limpiar{flex:1;background:var(--dorado);border:none;border-radius:9px;padding:11px;color:white;font-size:13px;font-weight:700;cursor:pointer}
+.fichas-box{background:#f8f9fa;border:1px solid #eee;border-radius:10px;padding:9px;display:flex;gap:7px;justify-content:center;margin-bottom:9px;flex-wrap:wrap}
+.ficha{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;cursor:pointer;color:white;border:3px solid rgba(0,0,0,0.15);transition:transform 0.1s}
+.ficha.sel{box-shadow:0 0 0 3px var(--dorado)}
+.f5{background:#c0392b}.f10{background:#2471a3}.f25{background:#1e8449}.f50{background:#6c3483}.f100{background:#2c3e50}.fC{background:linear-gradient(135deg,#f5a623,#dc8210)}
+.total-bar{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#f8f9fa;border-radius:9px;margin-bottom:9px}
+.total-label{font-size:12px;color:#666;font-weight:600}
+.total-amount{font-size:18px;font-weight:900;color:var(--azul)}
+.tabla-wrap{overflow-x:auto}
+.tabla{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.07)}
+.spc{background:#1a6b2a;text-align:center;padding:9px 5px;cursor:pointer;border:1px solid rgba(0,0,0,0.1)}
+.spc.sel{outline:3px solid var(--dorado);outline-offset:-2px}
+.spn{font-size:17px;font-weight:900;color:white;line-height:1}
+.spemi{font-size:22px;margin:2px 0;display:block}
+.spname{font-size:8.5px;color:rgba(255,255,255,0.9);text-transform:uppercase;font-weight:700}
+.ac{text-align:center;padding:8px 4px;cursor:pointer;border:1px solid rgba(0,0,0,0.1);vertical-align:middle}
+.ac.sel{outline:3px solid var(--dorado);outline-offset:-2px}
+.cr{background:#c0392b}.cb{background:#1a1a1a}
+.an{font-size:13px;font-weight:900;color:white;line-height:1}
+.ae{font-size:21px;margin:2px 0;display:block}
+.anm{font-size:8px;color:rgba(255,255,255,0.9);text-transform:uppercase;font-weight:700}
+.side{writing-mode:vertical-rl;transform:rotate(180deg);color:white;font-weight:900;font-size:10px;text-align:center;padding:3px 2px}
+.pc{background:#1a6b2a;text-align:center;padding:7px 3px;color:white;font-size:13px;font-weight:700}
+.anim-right{background:white;border-radius:13px;padding:16px;box-shadow:0 2px 6px rgba(0,0,0,0.07);position:sticky;top:75px}
+.panel-title{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:11px;display:flex;align-items:center;gap:5px}
+.apuesta-item{background:#f8f9fa;border-radius:9px;padding:10px;margin-bottom:7px;display:flex;align-items:center;gap:8px}
+.apuesta-emoji{font-size:22px;width:36px;height:36px;background:white;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.apuesta-info{flex:1}
+.apuesta-name{font-size:12px;font-weight:700;color:#1a1a1a}
+.apuesta-detail{font-size:10px;color:#999;margin-top:1px}
+.apuesta-monto{font-size:13px;font-weight:800;color:var(--azul)}
+.apuesta-del{color:#e05555;cursor:pointer;font-size:16px;background:none;border:none}
+.panel-total{background:var(--azul);border-radius:9px;padding:12px;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.panel-total span{color:rgba(255,255,255,0.65);font-size:12px;font-weight:600}
+.panel-total strong{color:var(--dorado);font-size:18px;font-weight:900}
+.btn-confirmar-panel{width:100%;background:var(--dorado);border:none;border-radius:11px;padding:12px;color:white;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.empty-panel{text-align:center;padding:26px 10px;color:#ccc}
+.empty-panel i{font-size:36px;margin-bottom:6px;display:block}
+.empty-panel p{font-size:12px}
+.det-header{text-align:center;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #f0f0f0}
+.det-header h3{color:var(--azul);font-size:17px;font-weight:700}
+.det-header p{color:#999;font-size:11px;margin-top:3px}
+.det-badge{display:inline-flex;align-items:center;gap:5px;background:var(--azul);color:white;border-radius:18px;padding:5px 14px;font-size:12px;font-weight:600;margin-bottom:12px}
+.det-table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px}
+.det-table th{background:var(--azul);color:white;padding:9px 11px;text-align:left;font-weight:700;font-size:11px}
+.det-table tr:nth-child(even){background:#f8f9fa}
+.det-table td{padding:9px 11px;color:#333;border-bottom:1px solid #f0f0f0}
+.det-btns{display:flex;gap:10px;margin-top:12px}
+.btn-cancelar{flex:1;background:white;border:2px solid var(--dorado);border-radius:10px;padding:11px;color:var(--dorado);font-size:13px;font-weight:700;cursor:pointer}
+.btn-confirmar-det{flex:2;background:var(--azul);border:none;border-radius:10px;padding:11px;color:white;font-size:13px;font-weight:700;cursor:pointer}
+.modal-saldo-inner{text-align:center;padding:18px}
+.saldo-ico{font-size:54px;margin-bottom:13px}
+.modal-saldo-inner h3{color:var(--azul);font-size:19px;font-weight:700;margin-bottom:8px}
+.modal-saldo-inner p{color:#666;font-size:13px;line-height:1.5;margin-bottom:18px}
+.btn-volver{background:var(--azul);color:white;border:none;border-radius:22px;padding:12px 42px;font-size:14px;font-weight:700;cursor:pointer}
+.btn-dep-link{display:block;margin-top:10px;color:var(--dorado);font-size:13px;cursor:pointer;font-weight:600;background:none;border:none;width:100%;text-align:center}
+.card-form{background:white;border-radius:13px;padding:22px;box-shadow:0 2px 6px rgba(0,0,0,0.07);max-width:620px}
+.fg2{margin-bottom:11px}
+.fl2{color:#666;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:block;font-weight:600}
+.fi2{width:100%;background:#f8f9fa;border:1.5px solid #e0e0e0;border-radius:9px;padding:11px 13px;color:#1a1a1a;font-size:14px;outline:none;transition:border-color 0.2s}
+.fi2:focus{border-color:var(--azul)}.fi2::placeholder{color:#bbb}
+.fs2{width:100%;background:#f8f9fa;border:1.5px solid #e0e0e0;border-radius:9px;padding:11px 13px;color:#1a1a1a;font-size:14px;outline:none;appearance:none}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.tel-wrap2{display:flex;gap:6px}
+.tel-prefix2{background:#f8f9fa;border:1.5px solid #e0e0e0;border-radius:9px;padding:11px 9px;color:#1a1a1a;font-size:14px;outline:none;appearance:none;width:110px;flex-shrink:0}
+.read-field{background:#f0f2f5;border:1.5px solid #e0e0e0;border-radius:9px;padding:11px 13px;color:#555;font-size:14px;font-weight:600}
+.btn-submit{background:var(--azul);color:white;border:none;border-radius:10px;padding:12px 26px;font-size:14px;font-weight:700;cursor:pointer}
+.form-sec-title{font-size:11px;font-weight:700;color:var(--azul);text-transform:uppercase;letter-spacing:1px;margin:16px 0 9px;padding-bottom:5px;border-bottom:2px solid #f0f0f0}
+.retirar-alert{background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:11px 13px;margin-bottom:13px;display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#856404}
+.bil-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.saldo-grande{background:linear-gradient(135deg,var(--azul),var(--azul-dark));border-radius:13px;padding:18px;margin-bottom:13px;color:white}
+.sg-label{font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px}
+.sg-amount{font-size:32px;font-weight:900;color:var(--dorado)}
+.sg-sub{font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px}
+.bono-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.12);border-radius:7px;padding:3px 10px;margin-top:6px}
+.bono-chip span{color:white;font-size:11px;font-weight:600}
+.metodos-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px}
+.mc{background:#f8f9fa;border:2px solid #e0e0e0;border-radius:10px;padding:12px 9px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;transition:all 0.15s}
+.mc.sel{border-color:var(--azul);background:#f0f4ff}
+.mc-icon{font-size:26px}.mc-name{font-size:11px;font-weight:700;color:#333;text-align:center}.mc-sub{font-size:10px;color:#999;text-align:center}
+.info-banco{background:#f0f4ff;border:1px solid rgba(26,74,138,0.15);border-radius:10px;padding:11px;margin-bottom:11px}
+.info-banco-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(26,74,138,0.08);font-size:12px}
+.info-banco-row:last-child{border-bottom:none}
+.ib-key{color:#666}.ib-val{font-weight:700;color:var(--azul)}
+.tabs-b{display:flex;background:#f0f2f5;border-radius:10px;padding:3px;gap:3px;margin-bottom:14px}
+.tab-b{flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:#666;font-size:12px;font-weight:600;cursor:pointer}
+.tab-b.active{background:var(--azul);color:white}
+.tab-sec-b{display:none}.tab-sec-b.active{display:block}
+.hist-item{background:white;border-radius:10px;padding:12px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.hist-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.tk-table-wrap{background:white;border-radius:13px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.07)}
+.tk-table{width:100%;border-collapse:collapse}
+.tk-table thead{background:var(--azul)}
+.tk-table th{color:white;padding:11px 13px;font-size:11px;text-align:left;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.tk-table tbody tr:nth-child(even){background:#f8f9fa}
+.tk-table tbody tr:hover{background:#f0f4ff}
+.tk-table td{padding:10px 13px;font-size:13px;color:#333;border-bottom:1px solid #f0f0f0}
+.status-pill{padding:3px 10px;border-radius:18px;font-size:11px;font-weight:700;display:inline-block}
+.sp-pend{background:#fff3cd;color:#856404}.sp-ganado{background:#d4edda;color:#155724}.sp-perdido{background:#f8d7da;color:#721c24}
+.btn-ver-mas{background:var(--azul);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600}
+.res-card{background:white;border-radius:12px;padding:13px;margin-bottom:8px;display:flex;align-items:center;gap:13px;box-shadow:0 1px 5px rgba(0,0,0,0.06)}
+.res-card.win{border-left:4px solid var(--dorado);background:#fffdf5}
+.res-emoji{width:54px;height:54px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;background:#f0f2f5}
+.res-info{flex:1}.res-loteria{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;font-weight:600}
+.res-animal{font-size:16px;font-weight:700;color:#1a1a1a}.res-num{font-size:12px;color:#666;margin-top:1px}
+.res-right{text-align:right}.res-hora{font-size:13px;font-weight:700;color:var(--azul)}.res-fecha{font-size:10px;color:#999;margin-top:2px}
+.perfil-grid{display:grid;grid-template-columns:270px 1fr;gap:16px}
+.perfil-sidebar{background:white;border-radius:13px;padding:20px;box-shadow:0 2px 6px rgba(0,0,0,0.07)}
+.perfil-avatar-big{width:82px;height:82px;border-radius:50%;background:linear-gradient(135deg,var(--azul),var(--dorado));display:flex;align-items:center;justify-content:center;margin:0 auto 13px}
+.perfil-avatar-big i{font-size:40px;color:white}
+.perfil-name{text-align:center;font-size:16px;font-weight:700;color:#1a1a1a}
+.perfil-handle{text-align:center;color:#999;font-size:11px;margin-top:2px;margin-bottom:14px}
+.tabs-perfil{display:flex;background:#f0f2f5;border-radius:10px;padding:3px;gap:3px;margin-bottom:16px}
+.tab-p{flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:#666;font-size:12px;font-weight:600;cursor:pointer}
+.tab-p.active{background:var(--azul);color:white}
+.tab-section-p{display:none}.tab-section-p.active{display:block}
+.radio-g{display:flex;gap:8px}
+.ro{flex:1;background:#f8f9fa;border:2px solid #e0e0e0;border-radius:9px;padding:10px;display:flex;align-items:center;gap:7px;cursor:pointer}
+.ro.sel{border-color:var(--azul);background:#f0f4ff}
+.ro span{font-size:12px;color:#333;font-weight:500}.ro.sel span{color:var(--azul);font-weight:700}
+.rdot{width:14px;height:14px;border-radius:50%;border:2px solid #ccc;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ro.sel .rdot{border-color:var(--azul)}.rdoti{width:6px;height:6px;border-radius:50%;background:var(--azul);display:none}.ro.sel .rdoti{display:block}
+.seg-item{background:#f8f9fa;border:1px solid #e0e0e0;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.segic{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.segtit{font-size:13px;font-weight:600;color:#1a1a1a}.segsub{font-size:10px;color:#999;margin-top:1px}
+.badd-btn{width:100%;background:#f8f9fa;border:2px dashed #ddd;border-radius:10px;padding:13px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;color:#999;font-size:12px;font-weight:600}
+.admin-header{background:linear-gradient(135deg,#1a1a1a,#2c3e50);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.admin-logo{display:flex;align-items:center;gap:10px}
+.admin-logo-icon{width:36px;height:36px;background:#e74c3c;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px}
+.admin-logo-text{color:white;font-size:15px;font-weight:900}
+.admin-logo-badge{background:#e74c3c;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px}
+.admin-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.admin-nav::-webkit-scrollbar{display:none}
+.adm-nav-btn{background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:8px 13px;color:rgba(255,255,255,0.6);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.2s}
+.adm-nav-btn:hover{background:rgba(255,255,255,0.15);color:white}
+.adm-nav-btn.active{background:#e74c3c;color:white}
+.admin-main{max-width:1400px;margin:0 auto;padding:20px}
+.adm-section{display:none}.adm-section.active{display:block}
+.adm-title{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.adm-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:18px}
+.adm-stat{background:white;border-radius:11px;padding:15px;box-shadow:0 2px 5px rgba(0,0,0,0.07);display:flex;flex-direction:column;gap:5px}
+.adm-stat-val{font-size:22px;font-weight:900;color:#1a1a1a}
+.adm-stat-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:1px}
+.adm-stat-icon{font-size:26px;margin-bottom:3px}
+.adm-table-wrap{background:white;border-radius:13px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.07);overflow-x:auto}
+.adm-table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
+.adm-table thead{background:#2c3e50}
+.adm-table th{color:white;padding:11px 13px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px}
+.adm-table tbody tr:nth-child(even){background:#f8f9fa}
+.adm-table tbody tr:hover{background:#f0f4ff}
+.adm-table td{padding:10px 13px;border-bottom:1px solid #f0f0f0;color:#333}
+.adm-card{background:white;border-radius:13px;padding:20px;box-shadow:0 2px 6px rgba(0,0,0,0.07);max-width:580px;margin-bottom:18px}
+.adm-form-title{font-size:11px;font-weight:700;color:#2c3e50;text-transform:uppercase;letter-spacing:1px;margin:14px 0 9px;border-bottom:2px solid #f0f0f0;padding-bottom:5px}
+.adm-input{width:100%;background:#f8f9fa;border:1.5px solid #e0e0e0;border-radius:9px;padding:10px 12px;color:#1a1a1a;font-size:14px;outline:none;margin-bottom:9px}
+.adm-select{width:100%;background:#f8f9fa;border:1.5px solid #e0e0e0;border-radius:9px;padding:10px 12px;color:#1a1a1a;font-size:14px;outline:none;appearance:none;margin-bottom:9px}
+.adm-btn{background:#2c3e50;color:white;border:none;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;margin-right:7px;margin-top:3px}
+.adm-btn.danger{background:#e74c3c}.adm-btn.success{background:#22a050}.adm-btn.warning{background:#f5a623}
+.adm-alert{background:#d4edda;border:1px solid #c3e6cb;border-radius:9px;padding:11px 14px;margin-bottom:13px;font-size:13px;color:#155724}
+@media(max-width:900px){
+  .stats-grid,.adm-stats{grid-template-columns:repeat(2,1fr)}
+  .loterias-grid{grid-template-columns:repeat(3,1fr)}
+  .tipos-grid{grid-template-columns:repeat(2,1fr)}
+  .anim-layout,.bil-grid,.perfil-grid{grid-template-columns:1fr}
+  .anim-right{position:static}
+  .horario-grid{grid-template-columns:repeat(4,1fr)}
+}
+@media(max-width:600px){
+  .loterias-grid{grid-template-columns:repeat(2,1fr)}
+  .frow,.frow2{grid-template-columns:1fr}
+  .banner-premio{flex-direction:column;gap:13px;text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<!-- MODAL EDAD -->
+<div class="modal-overlay" id="modal-edad">
+  <div class="modal-box modal-edad">
+    <div class="edad-icon">18+</div>
+    <h2>Verificación de edad</h2>
+    <p>Debes tener al menos 18 años para ser miembro de VeneSorteo.</p>
+    <button class="btn-si" onclick="closeModal('modal-edad')">✅ Ingresar</button>
+    <button class="btn-no" onclick="window.location.href='https://google.com'">Salir</button>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-terminos">
+  <div class="modal-box" style="max-width:680px">
+    <div class="modal-header"><h2>TÉRMINOS Y CONDICIONES</h2><button class="modal-close" onclick="closeModal('modal-terminos')">✕</button></div>
+    <div class="terminos-content">
+      <h3>Primera:</h3><p>Todo interesado debe registrarse siendo mayor de 18 años.</p>
+      <h3>Segunda:</h3><p>Al registrarse acepta las normas de VeneSorteo C.A.</p>
+      <h3>Premio Acumulado:</h3><p>Se incrementa con el 1.5% de ganancias diarias. Sorteo especial cada domingo.</p>
+      <h3>Contraseña:</h3><p>Mínimo 8 caracteres: mayúsculas, minúsculas, números y símbolos (@#$!%).</p>
+      <h3>Pagos:</h3><p>Solo números venezolanos (0412, 0414, 0416, 0424, 0426). Moneda: Bolívar (Bs).</p>
+    </div>
+    <div style="text-align:center;margin-top:18px"><button class="btn-gold" style="width:auto;padding:11px 40px" onclick="closeModal('modal-terminos')">Cerrar</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-detalle">
+  <div class="modal-box">
+    <button onclick="closeModal('modal-detalle')" style="position:absolute;top:13px;right:13px;background:none;border:none;font-size:19px;cursor:pointer;color:#999">✕</button>
+    <div class="det-header"><h3>⭐ Detalles de la apuesta ⭐</h3><p id="det-fecha"></p></div>
+    <div style="text-align:center;margin-bottom:13px">
+      <div class="det-badge">VES</div>
+      <div style="font-size:25px;font-weight:900;color:var(--azul)" id="det-total-top">0</div>
+    </div>
+    <div style="background:var(--verde);color:white;text-align:center;padding:8px;border-radius:7px;font-weight:700;font-size:13px;margin-bottom:9px" id="det-loteria-banner"></div>
+    <table class="det-table"><thead><tr><th>Horario</th><th>Animalito</th><th>Monto</th></tr></thead><tbody id="det-tbody"></tbody></table>
+    <div class="det-btns">
+      <button class="btn-cancelar" onclick="closeModal('modal-detalle')">Cancelar</button>
+      <button class="btn-confirmar-det" id="btn-confirmar-apuesta">✔ Confirmar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-saldo">
+  <div class="modal-box">
+    <button onclick="closeModal('modal-saldo')" style="position:absolute;top:13px;right:13px;background:none;border:none;font-size:19px;cursor:pointer;color:#999">✕</button>
+    <div class="modal-saldo-inner">
+      <div class="saldo-ico">💳</div>
+      <h3>Saldo insuficiente</h3>
+      <p>No tienes saldo suficiente. Deposita para continuar jugando.</p>
+      <button class="btn-volver" onclick="closeModal('modal-saldo')">Volver</button>
+      <button class="btn-dep-link" onclick="closeModal('modal-saldo');showSection('sec-billetera')">Ir a Depositar →</button>
+    </div>
+  </div>
+</div>
+<!-- LOGIN -->
+<div class="page active" id="page-login">
+  <div class="animals-bg" id="animals-bg"></div>
+  <div class="login-center">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">🎰</div>
+        <h1>VeneSorteo</h1>
+        <p>Tu Lotería Online de Confianza 🇻🇪</p>
+      </div>
+      <div class="login-tabs">
+        <button class="login-tab active" onclick="switchTab('login',this)">Iniciar Sesión</button>
+        <button class="login-tab" onclick="switchTab('registro',this)">Regístrate</button>
+      </div>
+      <div class="lform active" id="lform-login">
+        <div class="fg"><label class="fl">Correo</label><div class="fi-wrap"><i class="ti ti-mail"></i><input class="fi" id="l-email" type="email" placeholder="correo@ejemplo.com"></div></div>
+        <div class="fg"><label class="fl">Contraseña</label><div class="fi-wrap"><i class="ti ti-lock"></i><input class="fi" id="l-pass" type="password" placeholder="Tu contraseña"></div></div>
+        <div class="remember-wrap"><input type="checkbox"><label>Recordar usuario y clave</label></div>
+        <button class="btn-gold" id="btn-login">Inicia Sesión</button>
+      </div>
+      <div class="lform" id="lform-registro">
+        <div class="frow">
+          <div class="fg"><label class="fl">Nombre</label><div class="fi-wrap"><i class="ti ti-user"></i><input class="fi" id="r-nombre" type="text" placeholder="Juan"></div></div>
+          <div class="fg"><label class="fl">Apellido</label><div class="fi-wrap"><i class="ti ti-user"></i><input class="fi" id="r-apellido" type="text" placeholder="Pérez"></div></div>
+        </div>
+        <div class="fg"><label class="fl">Correo</label><div class="fi-wrap"><i class="ti ti-mail"></i><input class="fi" id="r-email" type="email" placeholder="correo@ejemplo.com"></div></div>
+        <div class="fg"><label class="fl">Teléfono (Venezuela)</label>
+          <div class="tel-wrap">
+            <select class="tel-prefix" id="r-prefix"><option>0412</option><option>0414</option><option>0416</option><option>0424</option><option>0426</option></select>
+            <input class="tel-num" id="r-tel" type="tel" placeholder="1234567" maxlength="7">
+          </div>
+        </div>
+        <div class="fg"><label class="fl">Contraseña</label><div class="fi-wrap"><i class="ti ti-lock"></i><input class="fi" id="r-pass" type="password" placeholder="8+ car., mayúsc., número, símbolo" oninput="checkPass(this.value)"></div>
+          <div class="pass-bar" id="pass-bar"></div>
+          <div class="pass-hint">8+ chars · mayúscula · número · símbolo (@#$!%)</div>
+        </div>
+        <div class="fg"><label class="fl">Confirmar contraseña</label><div class="fi-wrap"><i class="ti ti-lock-check"></i><input class="fi" id="r-pass2" type="password" placeholder="Repite tu contraseña"></div></div>
+        <div class="check-wrap"><input type="checkbox" id="acepto"><label for="acepto">Acepto los <a onclick="openModal('modal-terminos')">Términos y Condiciones</a></label></div>
+        <button class="btn-gold" id="btn-registro">Crear Cuenta</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- APP -->
+<div class="page" id="page-app">
+  <div class="app-header">
+    <div class="app-header-top">
+      <div class="app-logo"><div class="app-logo-icon">🎰</div><div><div class="app-logo-text">VeneSorteo</div><div class="app-logo-sub">Tu Lotería Online</div></div></div>
+      <div class="saldo-badge"><span>💰</span><span id="h-saldo">0.00</span><span style="color:rgba(255,255,255,0.4);font-size:11px">Bs</span></div>
+      <div style="display:flex;align-items:center;gap:9px">
+        <div class="user-chip" onclick="showSection('sec-perfil')">
+          <div class="user-avatar" id="h-avatar">U</div>
+          <div><div class="user-name" id="h-nombre">Usuario</div><div class="user-role">Jugador</div></div>
+        </div>
+      </div>
+    </div>
+    <nav class="app-nav">
+      <button class="nav-btn active" data-sec="sec-inicio" onclick="navClick(this,'sec-inicio')"><i class="ti ti-device-gamepad-2"></i><span>Juegos</span></button>
+      <button class="nav-btn" data-sec="sec-reportar" onclick="navClick(this,'sec-reportar')"><i class="ti ti-report-money"></i><span>Reportar pago</span></button>
+      <button class="nav-btn" data-sec="sec-billetera" onclick="navClick(this,'sec-billetera')"><i class="ti ti-wallet"></i><span>Depositar</span></button>
+      <button class="nav-btn" data-sec="sec-tickets" onclick="navClick(this,'sec-tickets');loadTickets()"><i class="ti ti-ticket"></i><span>Tickets</span></button>
+      <button class="nav-btn" data-sec="sec-retirar" onclick="navClick(this,'sec-retirar')"><i class="ti ti-cash-banknote"></i><span>Retirar</span></button>
+      <button class="nav-btn" data-sec="sec-resultados" onclick="navClick(this,'sec-resultados');loadResultados()"><i class="ti ti-trophy"></i><span>Resultados</span></button>
+      <button class="nav-btn" style="margin-left:auto" onclick="doLogout()"><i class="ti ti-logout"></i><span>Salir</span></button>
+    </nav>
+  </div>
+  <div class="app-main">
+    <div class="section active" id="sec-inicio">
+      <div class="banner-premio">
+        <div><div class="bp-label">🏆 Premio Acumulado Semanal</div><div class="bp-amount" id="premio-amount">0.00 Bs</div><div class="bp-sub">Se sortea cada domingo · 1.5% ganancias diarias</div></div>
+        <div style="display:flex;align-items:center;gap:13px"><div class="bp-cd"><div class="bp-cd-label">Próximo sorteo</div><div class="bp-cd-time" id="countdown">00:00:00</div></div><div style="font-size:52px">🏆</div></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon" style="background:#e8f4fd">🎮</div><div><div class="stat-val">12</div><div class="stat-label">Loterías</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#e8fdf0">📊</div><div><div class="stat-val">8</div><div class="stat-label">Sorteos hoy</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fdf8e8">🎫</div><div><div class="stat-val" id="st-tickets">0</div><div class="stat-label">Mis tickets</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fde8e8">🏅</div><div><div class="stat-val" id="st-ganados">0</div><div class="stat-label">Ganados</div></div></div>
+      </div>
+      <div class="sec-title">Elige tu Lotería</div>
+      <div class="loterias-grid" id="loterias-grid"></div>
+      <div class="sec-title">Tipos de Juego</div>
+      <div class="tipos-grid">
+        <div class="tipo-card" onclick="goAnimalitos(0)"><div class="tipo-icon" style="background:#e8f4fd">🐾</div><div class="tipo-name">Animalitos</div><div class="tipo-desc">Apuesta por tu animal de la suerte</div></div>
+        <div class="tipo-card" onclick="showToast('Próximamente')"><div class="tipo-icon" style="background:#f3e8fd">🎲</div><div class="tipo-name">Terminales</div><div class="tipo-desc">Elige tu número y horario</div></div>
+        <div class="tipo-card" onclick="showToast('Próximamente')"><div class="tipo-icon" style="background:#e8fdf0">🔢</div><div class="tipo-name">Triples</div><div class="tipo-desc">Trio, Serie, Corrida y más</div></div>
+        <div class="tipo-card" onclick="showToast('Próximamente')"><div class="tipo-icon" style="background:#fdf5e8">🃏</div><div class="tipo-name">Tripletas</div><div class="tipo-desc">Combina 3 animales</div></div>
+      </div>
+    </div>
+    <div class="section" id="sec-animalitos">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:13px">
+        <button onclick="showSection('sec-inicio')" style="background:#f0f2f5;border:none;border-radius:8px;padding:8px 13px;cursor:pointer;font-weight:600;color:#333">← Volver</button>
+        <h2 style="font-size:17px;font-weight:700;color:#1a1a1a">Animalitos</h2>
+      </div>
+      <div class="anim-layout">
+        <div>
+          <div class="loterias-scroll" id="anim-lscroll"></div>
+          <div class="anim-titulo" id="anim-titulo">🎯 Lotto Activo</div>
+          <div class="horario-box"><div class="horario-title">HORARIO</div><div class="horario-grid" id="horario-grid"></div></div>
+          <div class="procesar-row">
+            <button class="btn-procesar" id="btn-procesar">✔ PROCESAR</button>
+            <button class="btn-limpiar" onclick="limpiarApuesta()">↺ LIMPIAR</button>
+          </div>
+          <div class="fichas-box">
+            <div class="ficha f5" data-monto="5">5</div>
+            <div class="ficha f10" data-monto="10">10</div>
+            <div class="ficha f25" data-monto="25">25</div>
+            <div class="ficha f50" data-monto="50">50</div>
+            <div class="ficha f100" data-monto="100">100</div>
+            <div class="ficha fC" data-monto="0" title="Personalizado">✦</div>
+          </div>
+          <div class="total-bar"><span class="total-label">Total</span><span class="total-amount" id="anim-total">0.00 Bs</span></div>
+          <div class="tabla-wrap"><table class="tabla" id="tabla-anim"></table></div>
+        </div>
+        <div class="anim-right">
+          <div class="panel-title">🛒 Mi Apuesta</div>
+          <div id="panel-apuestas"><div class="empty-panel"><p>Selecciona un animal para comenzar</p></div></div>
+          <div id="panel-footer" style="display:none">
+            <div class="panel-total"><span>Total a pagar</span><strong id="panel-total-amt">0.00 Bs</strong></div>
+            <button class="btn-confirmar-panel" id="btn-confirmar-panel">✈ Procesar Apuesta</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="sec-reportar">
+      <div class="sec-title">Reportar Pago</div>
+      <div class="card-form">
+        <div class="form-sec-title">Datos del jugador</div>
+        <div class="fg2"><label class="fl2">Jugador</label><div class="read-field" id="rep-jugador">-</div></div>
+        <div class="fg2"><label class="fl2">Teléfono (Venezuela)</label>
+          <div class="tel-wrap2"><select class="tel-prefix2" id="rep-prefix"><option>0412</option><option>0414</option><option>0416</option><option>0424</option><option>0426</option></select><input class="fi2" id="rep-tel" type="tel" placeholder="1234567" maxlength="7" style="flex:1"></div>
+        </div>
+        <div class="form-sec-title">Datos de la transferencia</div>
+        <div class="fg2"><label class="fl2">Banco receptor</label><select class="fs2" id="rep-banco"><option value="">Elige uno</option><option>Bancamiga</option><option>Banco de Venezuela</option><option>Banesco</option><option>Mercantil</option><option>Provincial</option></select></div>
+        <div class="fg2"><label class="fl2">Origen</label><select class="fs2" id="rep-origen"><option value="">Elige uno</option><option>Pago Móvil</option><option>Transferencia</option><option>Zelle</option><option>USDT</option></select></div>
+        <div class="frow2">
+          <div class="fg2"><label class="fl2">Fecha</label><input class="fi2" type="date" id="rep-fecha"></div>
+          <div class="fg2"><label class="fl2">Monto (Bs)</label><input class="fi2" type="number" id="rep-monto" placeholder="0.00"></div>
+        </div>
+        <div class="fg2"><label class="fl2">Referencia</label><input class="fi2" type="text" id="rep-ref" placeholder="Ej: 00123456789"></div>
+        <button class="btn-submit" id="btn-reportar">Reportar pago</button>
+      </div>
+    </div>
+    <div class="section" id="sec-billetera">
+      <div class="sec-title">Billetera</div>
+      <div class="bil-grid">
+        <div>
+          <div class="saldo-grande"><div class="sg-label">Saldo disponible</div><div class="sg-amount" id="b-saldo">0.00 Bs</div><div class="sg-sub">VES — Bolívares</div></div>
+          <div class="tabs-b"><button class="tab-b active" onclick="stab('dep',this)">Depositar</button><button class="tab-b" onclick="stab('his',this)">Historial</button></div>
+          <div class="tab-sec-b active" id="tab-dep">
+            <div class="metodos-grid">
+              <div class="mc sel" onclick="selMC(this)"><div class="mc-icon">📱</div><div class="mc-name">Pago Móvil</div></div>
+              <div class="mc" onclick="selMC(this)"><div class="mc-icon">🎁</div><div class="mc-name">Tarjeta Regalo</div></div>
+              <div class="mc" onclick="selMC(this)"><div class="mc-icon">🏦</div><div class="mc-name">Datos Bancarios</div></div>
+              <div class="mc" onclick="selMC(this)"><div class="mc-icon">💎</div><div class="mc-name">USDT</div></div>
+            </div>
+            <div class="info-banco">
+              <div class="info-banco-row"><span class="ib-key">Banco</span><span class="ib-val">Bancamiga</span></div>
+              <div class="info-banco-row"><span class="ib-key">Pago Móvil</span><span class="ib-val" style="color:var(--dorado)">0414-000-0000</span></div>
+              <div class="info-banco-row"><span class="ib-key">Titular</span><span class="ib-val">VeneSorteo C.A.</span></div>
+              <div class="info-banco-row"><span class="ib-key">RIF</span><span class="ib-val">J-00000000-0</span></div>
+            </div>
+            <button class="btn-submit" onclick="navClick(document.querySelector('[data-sec=sec-reportar]'),'sec-reportar')">Ir a Reportar Pago →</button>
+          </div>
+          <div class="tab-sec-b" id="tab-his"><p style="color:#999;font-size:13px;text-align:center;padding:20px">Historial disponible próximamente</p></div>
+        </div>
+        <div class="card-form">
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:13px">Datos bancarios VeneSorteo</h3>
+          <div class="info-banco" style="background:white">
+            <div class="info-banco-row"><span class="ib-key">Banco</span><span class="ib-val">Bancamiga</span></div>
+            <div class="info-banco-row"><span class="ib-key">Cuenta</span><span class="ib-val">0172-0000-00-0000000000</span></div>
+            <div class="info-banco-row"><span class="ib-key">Titular</span><span class="ib-val">VeneSorteo C.A.</span></div>
+            <div class="info-banco-row"><span class="ib-key">RIF</span><span class="ib-val">J-00000000-0</span></div>
+            <div class="info-banco-row"><span class="ib-key">Pago Móvil</span><span class="ib-val" style="color:var(--dorado)">0414-000-0000</span></div>
+          </div>
+          <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:9px;padding:11px;font-size:12px;color:#856404">⚠️ Solo números venezolanos (0412,0414,0416,0424,0426). Después de transferir reporta el pago.</div>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="sec-retirar">
+      <div class="sec-title">Retirar Saldo</div>
+      <div class="card-form">
+        <div class="retirar-alert">ℹ️ Retiros procesados en 24-48 horas hábiles vía Pago Móvil.</div>
+        <div class="fg2"><label class="fl2">Saldo disponible</label><div class="read-field" style="color:var(--dorado);font-size:18px;font-weight:800" id="ret-saldo">0.00 Bs</div></div>
+        <div class="fg2"><label class="fl2">Monto (Bs)</label><input class="fi2" type="number" placeholder="Mínimo 50 Bs"></div>
+        <div class="fg2"><label class="fl2">Teléfono pago móvil</label>
+          <div class="tel-wrap2"><select class="tel-prefix2"><option>0412</option><option>0414</option><option>0416</option><option>0424</option><option>0426</option></select><input class="fi2" type="tel" placeholder="1234567" maxlength="7" style="flex:1"></div>
+        </div>
+        <div class="fg2"><label class="fl2">Banco destino</label><select class="fs2"><option>Selecciona</option><option>Bancamiga</option><option>Banco de Venezuela</option><option>Banesco</option></select></div>
+        <button class="btn-submit" onclick="showToast('✅ Solicitud enviada. En proceso.')">Solicitar retiro</button>
+      </div>
+    </div>
+    <div class="section" id="sec-tickets">
+      <div class="sec-title">Mis Tickets</div>
+      <div class="stats-grid" style="margin-bottom:13px">
+        <div class="stat-card"><div class="stat-icon" style="background:#e8f4fd">🎫</div><div><div class="stat-val" id="tk-total">0</div><div class="stat-label">Total</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#e8fdf0">🏆</div><div><div class="stat-val" id="tk-gan" style="color:var(--verde)">0</div><div class="stat-label">Ganados</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fff3e0">⏳</div><div><div class="stat-val" id="tk-pen" style="color:#f5a623">0</div><div class="stat-label">Pendientes</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fde8e8">❌</div><div><div class="stat-val" id="tk-per" style="color:var(--rojo)">0</div><div class="stat-label">Perdidos</div></div></div>
+      </div>
+      <div class="tk-table-wrap"><table class="tk-table"><thead><tr><th>Serial</th><th>Fecha</th><th>Juego</th><th>Estado</th><th>Costo</th><th>Ver</th></tr></thead><tbody id="tk-tbody"><tr><td colspan="6" style="text-align:center;padding:28px;color:#999">Cargando...</td></tr></tbody></table></div>
+    </div>
+    <div class="section" id="sec-resultados">
+      <div class="sec-title">Resultados</div>
+      <div id="resultados-lista"><div style="text-align:center;padding:30px;color:#999">Cargando resultados...</div></div>
+    </div>
+    <div class="section" id="sec-perfil">
+      <div class="sec-title">Mi Perfil</div>
+      <div class="perfil-grid">
+        <div class="perfil-sidebar">
+          <div class="perfil-avatar-big"><i class="ti ti-user" style="font-size:38px;color:white"></i></div>
+          <div class="perfil-name" id="p-nombre">Mi cuenta</div>
+          <div class="perfil-handle" id="p-handle">@usuario</div>
+          <div style="margin-top:14px"><button class="btn-submit" style="width:100%" onclick="doLogout()">Cerrar sesión</button></div>
+        </div>
+        <div style="background:white;border-radius:13px;padding:20px;box-shadow:0 2px 6px rgba(0,0,0,0.07)">
+          <div class="tabs-perfil"><button class="tab-p active" onclick="stabP('datos',this)">Datos</button><button class="tab-p" onclick="stabP('seguridad',this)">Seguridad</button></div>
+          <div class="tab-section-p active" id="tab-datos">
+            <div class="frow2"><div class="fg2"><label class="fl2">Nombre</label><input class="fi2" type="text" placeholder="Nombre"></div><div class="fg2"><label class="fl2">Apellido</label><input class="fi2" type="text" placeholder="Apellido"></div></div>
+            <div class="fg2"><label class="fl2">Correo</label><input class="fi2" type="email" placeholder="correo@ejemplo.com"></div>
+            <div class="fg2"><label class="fl2">Cédula</label><input class="fi2" type="text" placeholder="V-00000000"></div>
+            <button class="btn-submit" onclick="showToast('✅ Perfil guardado')">Guardar cambios</button>
+          </div>
+          <div class="tab-section-p" id="tab-seguridad">
+            <div class="fg2"><label class="fl2">Contraseña actual</label><input class="fi2" type="password" placeholder="••••••••"></div>
+            <div class="fg2"><label class="fl2">Nueva contraseña</label><input class="fi2" type="password" placeholder="8+ car., mayúsc., número, símbolo"></div>
+            <div class="fg2"><label class="fl2">Confirmar</label><input class="fi2" type="password" placeholder="••••••••"></div>
+            <button class="btn-submit" onclick="showToast('✅ Contraseña actualizada')">Actualizar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+  <div class="admin-header">
+    <div class="admin-logo"><div class="admin-logo-icon">⚙️</div><div><div class="admin-logo-text">VeneSorteo ADMIN</div></div><span class="admin-logo-badge">ADMIN</span></div>
+    <div class="admin-nav">
+      <button class="adm-nav-btn active" onclick="showAdmSec('adm-dashboard',this)">📊 Dashboard</button>
+      <button class="adm-nav-btn" onclick="showAdmSec('adm-usuarios',this)">👥 Usuarios</button>
+      <button class="adm-nav-btn" onclick="showAdmSec('adm-apuestas',this)">🎫 Apuestas</button>
+      <button class="adm-nav-btn" onclick="showAdmSec('adm-pagos',this)">💰 Pagos</button>
+      <button class="adm-nav-btn" onclick="showAdmSec('adm-resultados',this)">🏆 Resultados</button>
+      <button class="adm-nav-btn" onclick="showAdmSec('adm-config',this)">⚙️ Config</button>
+      <button class="adm-nav-btn" style="background:rgba(231,76,60,0.3)" onclick="doLogout()">🚪 Salir</button>
+    </div>
+  </div>
+  <div class="admin-main">
+    <div class="adm-section active" id="adm-dashboard">
+      <div class="adm-title">📊 Dashboard General</div>
+      <div class="adm-stats">
+        <div class="adm-stat"><div class="adm-stat-icon">👥</div><div class="adm-stat-val" id="adm-users">-</div><div class="adm-stat-label">Usuarios</div></div>
+        <div class="adm-stat"><div class="adm-stat-icon">🎫</div><div class="adm-stat-val" id="adm-apuestas">-</div><div class="adm-stat-label">Apuestas</div></div>
+        <div class="adm-stat"><div class="adm-stat-icon">💰</div><div class="adm-stat-val" id="adm-ingresos">-</div><div class="adm-stat-label">Ingresos totales</div></div>
+        <div class="adm-stat"><div class="adm-stat-icon">⏳</div><div class="adm-stat-val" id="adm-pagos-pend">-</div><div class="adm-stat-label">Pagos pendientes</div></div>
+        <div class="adm-stat"><div class="adm-stat-icon">🏆</div><div class="adm-stat-val" id="adm-premio">-</div><div class="adm-stat-label">Premio acumulado</div></div>
+      </div>
       <div class="adm-alert">✅ Panel conectado a Firebase en tiempo real. Los datos se actualizan automáticamente.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div class="adm-card">
